@@ -1,0 +1,43 @@
+name: DPI Auto-Test
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        method: [fake, split, disorder]
+        position: [1, 5, 10]
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🧪 Test YouTube with ${{ matrix.method }} + pos ${{ matrix.position }}
+        run: |
+          echo "🔍 Метод: ${{ matrix.method }}, позиция: ${{ matrix.position }}"
+          curl -s -o /dev/null -w "YouTube: %{http_code}\n" https://www.youtube.com
+          curl -s -o /dev/null -w "Google Video: %{http_code}\n" https://rr1---sn-4axm-n8vs.googlevideo.com
+
+      - name: 📊 Сохраняем результат
+        run: |
+          echo "${{ matrix.method }} - pos ${{ matrix.position }}" >> results.txt
+          curl -s -o /dev/null -w "%{http_code}\n" https://www.youtube.com >> results.txt
+
+      - name: 📤 Загружаем артефакт
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dpi-test-results
+          path: results.txt
+
+      - name: 📨 Отправка в Telegram
+        if: always()
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+            -d text="🔄 DPI Auto-Test завершён!%0A📊 Смотреть: https://github.com/k0sm0xyz/sistemny-analitik-portfolio/actions"

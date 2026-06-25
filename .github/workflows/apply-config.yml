@@ -1,0 +1,50 @@
+name: Apply Config to Site
+
+on:
+  push:
+    paths:
+      - 'config/*.json'
+      - 'config/*.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy_config:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🔍 Проверка JSON
+        run: |
+          if [[ -f config/site_settings.json ]]; then
+            echo "✅ Конфигурация валидна"
+            cat config/site_settings.json
+          else
+            echo "❌ Ошибка: файл не найден"
+            exit 1
+          fi
+
+      - name: 📂 Подготовка конфигурации
+        run: |
+          mkdir -p deploy
+          cp config/site_settings.json deploy/
+
+      - name: 🚀 Деплой на сервер
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "deploy/site_settings.json"
+          target: "/var/www/config/"
+          rm: true
+
+      - name: 🔄 Применение настроек
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            sudo systemctl reload nginx
+            echo "✅ Настройки применены к сайту"

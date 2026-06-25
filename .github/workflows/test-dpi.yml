@@ -1,0 +1,35 @@
+name: Test DPI for YouTube
+
+on:
+  push:
+    paths:
+      - 'config/byedpi_config.json'
+  workflow_dispatch:
+
+jobs:
+  test_dpi:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🔍 Проверка конфига
+        run: |
+          echo "🔍 Проверяем настройки DPI..."
+          cat config/byedpi_config.json | jq '.domainLists[] | select(.id=="youtube" or .id=="googlevideo") | {id: .id, active: .isActive, count: (.domains | length)}'
+
+      - name: 🌐 Тестируем YouTube
+        run: |
+          echo "🌐 Проверяем доступ к YouTube..."
+          curl -s -o /dev/null -w "YouTube: %{http_code}\n" https://www.youtube.com || echo "❌ YouTube недоступен"
+
+      - name: 🌐 Тестируем Google Video
+        run: |
+          echo "🌐 Проверяем доступ к Google Video..."
+          curl -s -o /dev/null -w "Google Video: %{http_code}\n" https://rr1---sn-4axm-n8vs.googlevideo.com || echo "⚠️ Google Video недоступен"
+
+      - name: 📊 Результат
+        run: |
+          echo "✅ Тест DPI завершён"
+          echo "📊 Смотреть логи: https://github.com/${{ github.repository }}/actions"

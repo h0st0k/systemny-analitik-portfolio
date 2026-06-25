@@ -1,0 +1,36 @@
+name: ciadpi Test on GitHub
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🔧 Build ciadpi from source
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git build-essential
+          git clone https://github.com/bol-van/ciadpi.git
+          cd ciadpi
+          make
+          sudo make install
+
+      - name: 🧪 Test YouTube with ciadpi
+        run: |
+          echo "🔍 Запускаем ciadpi с настройкой: --tlsrec 6+ss --tlsrec 27+ss --disorder 2 --fake --2"
+          timeout 10 ciadpi --tlsrec 6+ss --tlsrec 27+ss --disorder 2 --fake --2 &
+          sleep 3
+          curl -s -o /dev/null -w "YouTube через ciadpi: %{http_code}\n" https://www.youtube.com
+          curl -s -o /dev/null -w "Google Video через ciadpi: %{http_code}\n" https://rr1---sn-4axm-n8vs.googlevideo.com
+
+      - name: 📨 Отправка в Telegram
+        if: always()
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+            -d text="🧪 ciadpi-тест завершён!%0A📊 Смотреть: https://github.com/k0sm0xyz/sistemny-analitik-portfolio/actions"

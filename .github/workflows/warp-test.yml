@@ -1,0 +1,80 @@
+name: YouTube Availability Test (via Cloudflare WARP)
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Cloudflare WARP
+        uses: viperadnan-git/setup-warp@v1
+        with:
+          mode: client
+          stack: dual
+          retries: 3
+
+      - name: 🌐 Проверка сайтов
+        run: |
+          echo "📊 Проверка доступности через WARP:"
+          echo "YouTube: $(curl -s -o /dev/null -w "%{http_code}" https://www.youtube.com)"
+          echo "Twitter: $(curl -s -o /dev/null -w "%{http_code}" https://twitter.com)"
+          echo "Discord: $(curl -s -o /dev/null -w "%{http_code}" https://discord.com)"
+          echo "Instagram: $(curl -s -o /dev/null -w "%{http_code}" https://instagram.com)"
+          echo "Google: $(curl -s -o /dev/null -w "%{http_code}" https://google.com)"
+
+      - name: 📊 Создаём диаграмму
+        run: |
+          cat > diagram.md << 'EOF'
+          # 📊 Доступность сайтов через WARP
+          ```mermaid
+          graph TD
+              A[GitHub Actions] -->|Запуск WARP| B[Cloudflare WARP]
+              B -->|Проверка| C[YouTube]
+              B -->|Проверка| D[Twitter]
+              B -->|Проверка| E[Discord]
+              B -->|Проверка| F[Instagram]
+              B -->|Проверка| G[Google]
+              C -->|HTTP-код| H[Результат]
+              D -->|HTTP-код| H
+              E -->|HTTP-код| H
+              F -->|HTTP-код| H
+              G -->|HTTP-код| H
+          ```
+          EOF
+
+      - name: 📤 Сохраняем результаты
+        run: |
+          echo "=== Доступность через WARP ===" > results.txt
+          echo "YouTube: $(curl -s -o /dev/null -w "%{http_code}" https://www.youtube.com)" >> results.txt
+          echo "Twitter: $(curl -s -o /dev/null -w "%{http_code}" https://twitter.com)" >> results.txt
+          echo "Discord: $(curl -s -o /dev/null -w "%{http_code}" https://discord.com)" >> results.txt
+          echo "Instagram: $(curl -s -o /dev/null -w "%{http_code}" https://instagram.com)" >> results.txt
+          echo "Google: $(curl -s -o /dev/null -w "%{http_code}" https://google.com)" >> results.txt
+
+      - name: 📤 Загружаем артефакты
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: warp-test-results
+          path: |
+            results.txt
+            diagram.md
+
+      - name: 📨 Отправка в Telegram
+        if: always()
+        run: |
+          YT=$(curl -s -o /dev/null -w "%{http_code}" https://www.youtube.com)
+          TW=$(curl -s -o /dev/null -w "%{http_code}" https://twitter.com)
+          DC=$(curl -s -o /dev/null -w "%{http_code}" https://discord.com)
+          IG=$(curl -s -o /dev/null -w "%{http_code}" https://instagram.com)
+          GG=$(curl -s -o /dev/null -w "%{http_code}" https://google.com)
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+            -d text="✅ Доступность через WARP:%0AYouTube: $YT%0ATwitter: $TW%0ADiscord: $DC%0AInstagram: $IG%0AGoogle: $GG%0A📊 Смотреть: https://github.com/k0sm0xyz/sistemny-analitik-portfolio/actions"
