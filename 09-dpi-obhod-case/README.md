@@ -80,18 +80,22 @@ brave --proxy-server="socks5://127.0.0.1:1080"
 
 ---
 
-📊 Результаты тестирования
+## 📊 Результаты тестирования
 
-Ресурс Без обхода С обходом
-YouTube ❌ ✅
-GitHub (push/pull) ❌ ✅
-DeepSeek ❌ ✅
-Leonardo AI ❌ ✅
-apt update (скорость) 100% 100%
+| Ресурс | Без обхода | С обходом |
 
----
+|---|---|---|
 
-🤖 Автоматизация
+| YouTube | ❌ | ✅ |
+
+| GitHub (push/pull) | ❌ | ✅ |
+
+| DeepSeek | ❌ | ✅ |
+
+| Leonardo AI | ❌ | ✅ |
+
+| apt update (скорость) | 100% | 100% |
+
 
 Скрипт install_dpi.sh:
 
