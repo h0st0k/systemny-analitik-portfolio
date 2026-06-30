@@ -54,7 +54,7 @@ tpws --mode 1 --midsld --disorder --oob
 One-Line Deploy
 
 ```bash
-curl -kLO https://raw.githubusercontent.com/k0sm0/dpi-obhod/main/install_dpi.sh && chmod +x install_dpi.sh && ./install_dpi.sh
+curl -kLO https://raw.githubusercontent.com/h0st0k/dpi-obhod/main/install_dpi.sh && chmod +x install_dpi.sh && ./install_dpi.sh
 ```
 
 ---

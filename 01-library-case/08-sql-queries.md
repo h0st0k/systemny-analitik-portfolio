@@ -39,5 +39,5 @@ SELECT email, COUNT(*) AS duplicate_count
 FROM Readers
 GROUP BY email
 HAVING COUNT(*) > 1;
-Автор: k0sm0
+Автор: h0st0k
 Дата: 24.06.2026

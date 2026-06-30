@@ -90,8 +90,8 @@
 ## 📬 Контакты
 
 - 📧 Email: **giopt097@gmail.com**
-- 💬 Telegram: **@k0sm0**
-- 🐙 GitHub: [k0sm0](https://github.com/k0sm0)
+- 💬 Telegram: **@h0st0k**
+- 🐙 GitHub: [h0st0k](https://github.com/h0st0k)
 
 ---
 
