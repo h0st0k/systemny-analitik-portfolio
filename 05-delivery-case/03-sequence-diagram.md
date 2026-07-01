@@ -1,3 +1,34 @@
+# Диаграмма последовательности: Создание заказа и подбор курьера
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Customer as Клиент (Магазин)
+    participant API as API Gateway
+    participant DeliverySys as Сервис Доставки
+    participant GeoSys as Гео-Сервис (Карты)
+    participant DB as База Данных
+
+    Customer->>API: POST /api/v1/deliveries (Данные заказа)
+    API->>DeliverySys: Валидация и передача запроса
+    
+    critical Расчет геокоординат и дистанции
+        DeliverySys->>GeoSys: Запрос координат адресов (Геокодирование)
+        GeoSys-->>DeliverySys: Координаты (Широта/Долгота)
+        DeliverySys->>GeoSys: Расчет оптимального маршрута и матрицы расстояний
+        GeoSys-->>DeliverySys: Дистанция (км) и время (мин)
+    end
+
+    DeliverySys->>DeliverySys: Расчет стоимости по тарификатору
+    DeliverySys->>DB: Сохранение заказа (Статус: Created)
+    DB-->>DeliverySys: ID заказа сохранен
+    
+    DeliverySys->>DB: Поиск ближайших свободных курьеров в радиусе 3 км
+    DB-->>DeliverySys: Список подходящих курьеров
+    
+    DeliverySys-->>Customer: Ответ 201 Created (ID, Стоимость, Ссылка на трекинг)
+```
+
 # Sequence Diagram — автоматическое переназначение заказа
 
 ```mermaid
